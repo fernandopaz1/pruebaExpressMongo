@@ -4,8 +4,29 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-// importamos las variables de entorno
+const mongoose = require('mongoose');
+
+// importamos las variables de entorno antes de usarlas para
+// conectarnos a la base de datos 
 require('dotenv').config();
+
+/** Conexion a base de datos usando el string de .env**/
+mongoose.connect(process.env.CONNECTION_STRING)
+
+const connection = mongoose.connection;
+
+// Agregamos un eventListener a la conexion
+// para hacer console.log si hay un error
+connection.on('error',()=>{
+  console.log('Error conection to database')
+})
+
+// es un eventListener que solo corre una unica vez
+connection.once('open', ()=>{
+  console.log('Connected to dabase')
+})
+
+
 
 // aca importamos los archivos que tienen
 // el codigo de nuestros endpoints y se lo asignamos
@@ -35,10 +56,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // arriba importamos archivos y lo asignameos a
 // variables que en este paso asignamos a url
 app.use('/', indexRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/products', productsRouter);
-app.use('/api/orders', ordersRouter);
+// app.use('/api/auth', authRouter);
+// app.use('/api/users', usersRouter);
+// app.use('/api/products', productsRouter);
+// app.use('/api/orders', ordersRouter);
 
 
 
@@ -46,7 +67,7 @@ app.use('/api/orders', ordersRouter);
 // cada vez que surge un error va parar al error handler
 // que es la seccion de codigo de abajo
 app.use(function(req, res, next) {
-  next(createError(404));
+  next(createError(404, 'El endpoint no existe'));
 });
 
 
@@ -61,7 +82,15 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
+  
+  //En vez de renderizar una vista
+  // enviamos un mensaje con el codigo de error
+  // por default el codigo lo ponemos en 500
+  res.json({
+    errorcode: err.status || 500,
+    message: res.locals.message
+  })
 });
 
 module.exports = app;
