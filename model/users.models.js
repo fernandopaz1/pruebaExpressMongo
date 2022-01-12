@@ -17,6 +17,8 @@ const jwt = require('jsonwebtoken')
 // mucho mayor para que no tengamos que hacer login siempre
 const {ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET} = process.env;
 
+const Token = require('./token.models')
+
 // Creamos el schema que va a ir en nuestra base
 // el id es automatico asiq ue no hay que especificarlo
 const UserSchema = new Mongoose.Schema({
@@ -99,7 +101,7 @@ UserSchema.methods.createAccessToken = function (){
     return accessToken;
 }
 
-UserSchema.methods.createRefreshToken = function (){
+UserSchema.methods.createRefreshToken = async function (){
     const {id, username}= this;
     //hacemos lo mismo para el refresh token solo 
     // que con expiracion en 20 dias 
@@ -112,5 +114,11 @@ UserSchema.methods.createRefreshToken = function (){
         REFRESH_TOKEN_SECRET,
         {expiresIn: '20d'}
     );
+
+    try{
+        await new Token({token: refreshToken})
+    }catch(ex){
+        next(new Error('Error creating refresh token'));
+    }
     return refreshToken;
 }
