@@ -1,10 +1,10 @@
-const mongoose = require('mongoose')
+const Mongoose = require('mongoose')
 
 //cremos el scheema del token que solo guarda un string
 // este sting es el token en si
 
-const TokenSchema = new mongoose.Mongoose.Schema({
+const TokenSchema = new Mongoose.Schema({
     token: {type: String}
 })
 
-module.exports = mongoose.model('Token',TokenSchema)
+module.exports = Mongoose.model('Token',TokenSchema)
